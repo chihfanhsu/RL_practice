@@ -5,26 +5,44 @@ class Prediction:
     def __init__(self, env):
         super(Prediction, self).__init__()
         self.env = env
-        
-    def policy_eval(self, iteration=10):
-        p = self.env.get_env_model()
-        policy = np.ones((4,self.env.MAZE_Limit[0]*self.env.MAZE_Limit[1]))*0.25
-        gamma = 1
-        reward = np.ones((4,16))*-1
+        self.tot_states = self.env.MAZE_Limit[0]*self.env.MAZE_Limit[1]
+        self.init_policy = np.ones((len(self.env.action_space),self.tot_states))/len(self.env.action_space)
+        self.reward = np.ones((len(self.env.action_space),self.tot_states))*-1
+        self.discont_factor = 1
+        self.init_value = np.zeros((self.tot_states,))
+        self.value = self.init_value.copy()
         # set reward to oval state = 0
         for a in range(len(self.env.action_space)):
             for t in range(len(self.env.oval_state)):
-                reward[a,self.env.position2state(self.env.oval_state[t])] = 0
-
+                self.reward[a,self.env.position2state(self.env.oval_state[t])] = 0
+        
         # set reward to oval state = 0
         for a in range(len(self.env.action_space)):
             for t in range(len(self.env.block_state)):
-                reward[a,self.env.position2state(self.env.block_state[t])] = 0
-
+                self.reward[a,self.env.position2state(self.env.block_state[t])] = 0
+        
+    def update_oplicy(self, p, value, mode = "argmax"):
+        if mode == "argmax":
+            new_policy = np.zeros((len(self.env.action_space),16))
+            argmax_a = np.argmax(np.matmul(p, value),axis=0)
+            for c, value in enumerate(argmax_a):
+                new_policy[value,c] = 1
+            return new_policy
+        else:
+            print("Error parameter (model) in update_oplicy function.")
+            return False
+        
+    def policy_eval(self, reward, policy, gamma, p, v):     
+            return np.sum(policy*(reward+gamma*np.matmul(p,v)),axis = 0)
+    
+    def iteration(self, update=10):
+        p = self.env.get_env_model()
+        policy = self.init_policy.copy()
+        self.value = self.init_value.copy()
+        gamma = self.discont_factor
         # policy evaluation
-        v_start = np.zeros((16,))
-        v = v_start.copy()
-        for k in range(iteration):
-            v_next = np.sum(policy*(reward+gamma*np.matmul(p,v)),axis = 0)
+        for k in range(update):
+            v_next = self.policy_eval(self.reward, policy, gamma, p, self.value)
+            policy = self.update_oplicy(p, v_next, mode ="argmax")
             print(k, v_next.reshape([4,4]))
-            v = v_next.copy()
+            self.value = v_next.copy()
