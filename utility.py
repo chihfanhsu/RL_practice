@@ -16,7 +16,7 @@ class Prediction:
             for t in range(len(self.env.oval_state)):
                 self.reward[a,self.env.position2state(self.env.oval_state[t])] = 0
         
-        # set reward to oval state = 0
+        # set reward to block state = 0
         for a in range(len(self.env.action_space)):
             for t in range(len(self.env.block_state)):
                 self.reward[a,self.env.position2state(self.env.block_state[t])] = 0
@@ -33,10 +33,12 @@ class Prediction:
             print("Error parameter (model) in update_oplicy function.")
             return False
         
-    def BEE(self, reward, policy, gamma, p, v): # Bellman Expectation Equation
+    # Bellman Expectation Equation
+    def BEE(self, reward, policy, gamma, p, v):
             return np.sum(policy*(reward+gamma*np.matmul(p,v)),axis = 0)
     
-    def BOE(self, reward, gamma, p, v): # Bellman Optimality Equation
+    # Bellman Optimality Equation
+    def BOE(self, reward, gamma, p, v):
         return np.max(reward + gamma*np.matmul(p,v), axis = 0)
     
     def iteration(self, update=10):
