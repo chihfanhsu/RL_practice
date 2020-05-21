@@ -32,8 +32,11 @@ class Prediction:
             print("Error parameter (model) in update_oplicy function.")
             return False
         
-    def policy_eval(self, reward, policy, gamma, p, v):     
+    def policy_eval(self, reward, policy, gamma, p, v): # for policy iteration
             return np.sum(policy*(reward+gamma*np.matmul(p,v)),axis = 0)
+    
+    def value_eval(self, reward, gamma, p, v): # for value iteration
+        return np.max(reward + gamma*np.matmul(p,v), axis = 0)
     
     def iteration(self, update=10):
         p = self.env.get_env_model()
@@ -42,7 +45,10 @@ class Prediction:
         gamma = self.discont_factor
         # policy evaluation
         for k in range(update):
-            v_next = self.policy_eval(self.reward, policy, gamma, p, self.value)
-            policy = self.update_oplicy(p, v_next, mode ="argmax")
+            # policy iteration
+            # v_next = self.policy_eval(self.reward, policy, gamma, p, self.value)
+            # policy = self.update_oplicy(p, v_next, mode ="argmax")
+            # value iteration
+            v_next = self.value_eval(self.reward, gamma, p, self.value)
             print(k, v_next.reshape([4,4]))
             self.value = v_next.copy()
