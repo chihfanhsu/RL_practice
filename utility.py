@@ -23,6 +23,7 @@ class Prediction:
         
     def update_oplicy(self, p, value, mode = "argmax"):
         if mode == "argmax":
+            # Greedy Policy Improvement
             new_policy = np.zeros((len(self.env.action_space),16))
             argmax_a = np.argmax(np.matmul(p, value),axis=0)
             for c, value in enumerate(argmax_a):
@@ -32,10 +33,10 @@ class Prediction:
             print("Error parameter (model) in update_oplicy function.")
             return False
         
-    def policy_eval(self, reward, policy, gamma, p, v): # for policy iteration
+    def BEE(self, reward, policy, gamma, p, v): # Bellman Expectation Equation
             return np.sum(policy*(reward+gamma*np.matmul(p,v)),axis = 0)
     
-    def value_eval(self, reward, gamma, p, v): # for value iteration
+    def BOE(self, reward, gamma, p, v): # Bellman Optimality Equation
         return np.max(reward + gamma*np.matmul(p,v), axis = 0)
     
     def iteration(self, update=10):
@@ -46,9 +47,9 @@ class Prediction:
         # policy evaluation
         for k in range(update):
             # policy iteration
-            # v_next = self.policy_eval(self.reward, policy, gamma, p, self.value)
+            # v_next = self.BEE(self.reward, policy, gamma, p, self.value)
             # policy = self.update_oplicy(p, v_next, mode ="argmax")
             # value iteration
-            v_next = self.value_eval(self.reward, gamma, p, self.value)
+            v_next = self.BOE(self.reward, gamma, p, self.value)
             print(k, v_next.reshape([4,4]))
             self.value = v_next.copy()
