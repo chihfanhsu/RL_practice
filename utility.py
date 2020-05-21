@@ -46,7 +46,7 @@ class Prediction:
         policy = self.init_policy.copy()
         self.value = self.init_value.copy()
         gamma = self.discont_factor
-        # policy evaluation
+        # start iteration
         for k in range(update):
             # policy iteration
             # v_next = self.BEE(self.reward, policy, gamma, p, self.value)
