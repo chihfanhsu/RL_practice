@@ -4,15 +4,20 @@ from utility import Prediction
 import time
 import numpy as np
 
-s = (4, 4)
+maz = Maze()
+# only for interaction:
+# env.bind('<KeyPress>', onKeyPress)
+# env.mainloop()
+
+s = maz.MAZE_Limit
 # crate environment
 env = np.tile(1, s)
 # terminate state
-env[0, 0] = 0
-env[3, 3] = 0
-# block state
-env[2, 2] = 0
-env
+termin = tuple(map(tuple, np.transpose(maz.oval_state)))
+env[termin] = 0
+# # block state
+# block = tuple(map(tuple, np.transpose(maz.block_state)))
+# env[block] = 0
 
 # reward
 r = -1
