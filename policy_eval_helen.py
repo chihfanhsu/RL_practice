@@ -49,21 +49,25 @@ if block_setting:
     b1 = rt_block[..., 1] - 1
     b1[np.less(b1, 0)] = 0
     rt_block[..., 1] = b1
+    rt_block = tuple(map(tuple, rt_block))
     # left (from right)
     lt_block = block0.copy()
     b2 = lt_block[..., 1] + 1
     b2[np.greater(b2, s[1] - 1)] = s[1] - 1
     lt_block[..., 1] = b2
+    lt_block = tuple(map(tuple, lt_block))
     # up (from down)
     ut_block = block0.copy()
     b3 = ut_block[..., 0] + 1
     b3[np.greater(b3, s[0] - 1)] = s[0] - 1
     ut_block[..., 0] = b3
+    ut_block = tuple(map(tuple, ut_block))
     # down (from up)
     dt_block = block0.copy()
     b4 = dt_block[..., 0] - 1 
     b4[np.less(b4, 0)] = 0
     dt_block[..., 0] = b4
+    dt_block = tuple(map(tuple, dt_block))
 
 # reward
 r0 = -1
@@ -98,6 +102,7 @@ for i in range(10):
     elif (algo_type == "vi"): # value(policy) iteration
         policy = np.argmax(np.concatenate([p1[np.newaxis], p2[np.newaxis], p3[np.newaxis], p4[np.newaxis]]), 0)
         next_state = np.amax(np.concatenate([p1[np.newaxis], p2[np.newaxis], p3[np.newaxis], p4[np.newaxis]]), 0)
+        print(i+1, policy)
     else:
         print("type error")
     
