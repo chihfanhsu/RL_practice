@@ -1,12 +1,12 @@
 #code
 import numpy as np
 
-class Prediction:
+class RL:
     def __init__(self, env):
-        self.DP = self.DP(env)
-        self.MF = self.model_free(env)
+        self.DP = self.DP_prediction(env)
+        self.MF = self.model_free_prediction(env)
         
-    class DP:
+    class DP_prediction:
         def __init__(self,env,discount_factor=1):
             self.env = env
             self.init_policy = np.ones((len(self.env.action_space),env.tot_states))/len(self.env.action_space)
@@ -49,7 +49,7 @@ class Prediction:
                 
             print(k, self.value.reshape([4,4]))
             
-    class model_free:
+    class model_free_prediction:
         def __init__(self, env, lamb = 0.9, discount_factor = 0.9, alpha = 0.5):
             self.env = env
             self.gamma = discount_factor
@@ -176,5 +176,5 @@ class Prediction:
                 else:
                     print("ERROR MF model, please set to MC or TD")
             
-            print("V\n",self.value.reshape(4,4))
+            print("Value\n",self.value.reshape(4,4))
             print("--------------------------\n")
