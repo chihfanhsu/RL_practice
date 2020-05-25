@@ -102,11 +102,7 @@ class RL:
                         if (eN[cur_state]==0):
                             eN[cur_state] = eN[cur_state] + 1
                             # calculate with following returns
-                            Gt = np.sum(episode[t:,4]*(np.logspace(start=1,
-                                                                    stop=len(episode[t:,4]),
-                                                                    num=len(episode[t:,4]),
-                                                                    endpoint=True,
-                                                                    base=self.gamma))/self.gamma)
+                            Gt = np.sum(episode[t:,4]*np.array([self.gamma**i for i in range(len(episode[t:,4]))]))
                             eS[cur_state] = eS[cur_state] + Gt
                     
                     self.N = self.N + eN
@@ -147,11 +143,7 @@ class RL:
                         # get reward sequence
                         reward = sub_episode[:,4]
                         # calculate the TD target, R_{t+1} + gamma*R_{t+2} + ... + gamma^{n-1}*R_{t+n} + gamma^{n}*V_{t+n} 
-                        TD_target = np.sum(reward*(np.logspace(start=1,
-                                                               stop=len(reward),
-                                                               num=len(reward),
-                                                               endpoint=True,
-                                                               base=self.gamma))/self.gamma) + np.power(self.gamma,len(reward))*self.value[nxt_state]
+                        TD_target = np.sum(reward*np.array([self.gamma**i for i in range(len(reward))])) + np.power(self.gamma,len(reward))*self.value[nxt_state]
                         
                         TD_error = TD_target - self.value[cur_state]
                         self.value[cur_state] = self.value[cur_state] + self.alpha*(TD_error)
