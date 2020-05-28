@@ -2,7 +2,7 @@
 Contributors: silver and helen
 
 ## A Small Grid World 
-A small grid world, you can define the parameter in the maze_env.py
+A small grid world, you can define the parameter in the [maze_env.py](https://github.com/chihfanhsu/RL_practice/blob/master/maze_env.py).
 For example, <br />
 ![alt text](https://github.com/chihfanhsu/RL_practice/blob/master/README_fig/world_example.png)<br />
 ```python
@@ -15,6 +15,7 @@ self.block_state = np.array([[2, 1]]) # you shall not pass!
 self.hell_state =  np.array([[4, 4]]) # you die!
 ```
 ## Implemented Algorithms
+You can find the functions in the [utility.py](https://github.com/chihfanhsu/RL_practice/blob/master/utility.py).
 * Planning
   * Dynamic programing
 * Model-free Prediction
