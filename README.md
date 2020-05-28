@@ -22,7 +22,7 @@ self.hell_state =  np.array([[4, 4]]) # you die!
   * Temporal Difference (Action-value)
     * TD(0)
     * TD(n)
-    * TD($\lambda$)
+    * TD(```math $\lambda$```)
 * Model-free Control
   * Monte-Carlo
-  * Sarsa(${\lambda}$), on/off-policy
+  * Sarsa(```math $\lambda$```), on/off-policy
