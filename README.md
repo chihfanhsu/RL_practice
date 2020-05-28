@@ -25,4 +25,4 @@ self.hell_state =  np.array([[4, 4]]) # you die!
     * TD($\lambda$)
 * Model-free Control
   * Monte-Carlo
-  * Sarsa($\lambda$), on/off-policy
+  * Sarsa(${\lambda}$), on/off-policy
