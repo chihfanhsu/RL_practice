@@ -13,18 +13,17 @@ class Maze(tk.Tk, object):
         super(Maze, self).__init__()
         self.action_space = ['0','1','2','3']
         self.title('Maze')
-        self.MAZE_Limit = np.array([4, 4]) # (Width,Height)
+        self.MAZE_Limit = np.array([4, 4]) # agent's actions, move up, right, down, and left
         self.UNIT = UNIT
         self.geometry('{0}x{1}'.format(self.MAZE_Limit[0]*self.UNIT, self.MAZE_Limit[1]*self.UNIT))
-        self.tot_states = self.MAZE_Limit[0]*self.MAZE_Limit[1]
-        
-        self.origin = np.array([0, 0]) # original loc of agent
+        self.tot_states = self.MAZE_Limit[0]*self.MAZE_Limit[1]      
+        self.origin = np.array([0, 0]) # world's original location
         self.origin_center = self.origin.copy() + int(.5*self.UNIT)
-        self.start_state =  np.array([1, 2]) # agent loc
+        self.start_state =  np.array([1, 2]) # initial location of the agent
         self.cur_state = self.start_state.copy() # agent loc
         self.oval_state = np.array([[0, 0],[3, 3]]) # reward!
         self.block_state = np.array([[2, 1]]) # you shall not pass!
-        self.hell_state =  np.array([[4, 4]]) # reward!
+        self.hell_state =  np.array([[4, 4]]) # you die!
         
         self.reward = np.ones((len(self.action_space),self.tot_states))*-1
         # set reward to oval state = 0
