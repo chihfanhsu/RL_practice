@@ -90,7 +90,7 @@ class RL:
                 
             return new_policy
         
-        def iteration(self, n_episode = 10, model="MC", control = False):
+        def iteration(self, n_episode = 10, model="MC", control = False, on_policy = True):
             print("The model is", model)
             # visit matrix N(s)
             # N = np.zeros((self.env.tot_states,)) # state-value
@@ -144,7 +144,14 @@ class RL:
                         nxt_state = int(self.env.position2state(np.asarray([episode[t,2],episode[t,3]])))
                         reward = episode[t,4]
                         action = int(episode[t,5])
-                        TD_target = reward + self.gamma*self.Avalue[action, nxt_state]
+                        if (t+1) < len(episode):
+                            nxt_action = int(episode[t+1,5])
+                        elif (t+1) == len(episode):
+                            nxt_action = np.random.choice(np.arange(0, len(self.env.action_space)), p=self.policy[:,nxt_state])
+                        else:
+                            print("Error")
+                        
+                        TD_target = reward + self.gamma*self.Avalue[nxt_action, nxt_state]
                         TD_error = TD_target - self.Avalue[action, cur_state]
                         # set 1 for the visiting state
                         simulas = np.zeros((len(self.env.action_space),self.env.tot_states))
@@ -166,8 +173,14 @@ class RL:
                         # get reward sequence
                         reward = sub_episode[:,4]
                         action = int(episode[t,5])
+                        if (t+1) < len(episode):
+                            nxt_action = int(episode[t+1,5])
+                        elif (t+1) == len(episode):
+                            nxt_action = np.random.choice(np.arange(0, len(self.env.action_space)), p=self.policy[:,nxt_state])
+                        else:
+                            print("Error")
                         # calculate the TD target, R_{t+1} + gamma*R_{t+2} + ... + gamma^{n-1}*R_{t+n} + gamma^{n}*V_{t+n} 
-                        TD_target = np.sum(reward*np.array([self.gamma**i for i in range(len(reward))])) + np.power(self.gamma,len(reward))*self.Avalue[action, nxt_state]
+                        TD_target = np.sum(reward*np.array([self.gamma**i for i in range(len(reward))])) + np.power(self.gamma,len(reward))*self.Avalue[nxt_action, nxt_state]
                         
                         TD_error = TD_target - self.Avalue[action, cur_state]
                         self.Avalue[action, cur_state] = self.Avalue[action, cur_state] + self.alpha*(TD_error)
@@ -177,13 +190,22 @@ class RL:
                     # Eligibility Traces
                     E = np.zeros((len(self.env.action_space),self.env.tot_states))
                     # scan episode
-                    step =  0
                     for t in range(len(episode)):
                         cur_state = int(self.env.position2state(np.asarray([episode[t,0],episode[t,1]])))
                         nxt_state = int(self.env.position2state(np.asarray([episode[t,2],episode[t,3]])))
                         reward = episode[t,4]
                         action = int(episode[t,5])
-                        TD_target = reward + self.gamma*self.Avalue[action, nxt_state]
+                        if (t+1) < len(episode):
+                            if on_policy:
+                                nxt_action = int(episode[t+1,5]) # on policy
+                            else:
+                                nxt_action = np.argmax(self.Avalue[:,nxt_state]) # off policy
+                        elif (t+1) == len(episode):
+                            nxt_action = np.random.choice(np.arange(0, len(self.env.action_space)), p=self.policy[:,nxt_state])
+                        else:
+                            print("Error")
+                        
+                        TD_target = reward + self.gamma*self.Avalue[nxt_action, nxt_state]
                         TD_error = TD_target - self.Avalue[action, cur_state]
                         # set 1 for the visiting state
                         simulas = np.zeros((len(self.env.action_space),self.env.tot_states))
@@ -191,7 +213,7 @@ class RL:
                         E = E + simulas
                         # update V(s) for every state
                         self.Avalue = self.Avalue + self.alpha*TD_error*E
-                        # update Eligibility Traces 
+                        # update Eligibility Traces
                         E = self.gamma*self.lamb*E
                     if (control):
                         # update policy
