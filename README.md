@@ -22,7 +22,7 @@ self.hell_state =  np.array([[4, 4]]) # you die!
   * Temporal Difference (Action-value)
     * TD(0)
     * TD(n)
-    * TD(lambda)
+    * TD(<img src="http://chart.googleapis.com/chart?cht=tx&chl=\lambda" style="border:none;">)
 * Model-free Control
   * Monte-Carlo
-  * Sarsa(lambda), on/off-policy
+  * Sarsa(<img src="http://chart.googleapis.com/chart?cht=tx&chl=\lambda" style="border:none;">), on/off-policy
