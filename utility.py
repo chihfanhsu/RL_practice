@@ -3,10 +3,10 @@ import numpy as np
 
 class RL:
     def __init__(self, env):
-        self.DP = self.DP_prediction(env)
-        self.MF = self.model_free_prediction(env)
+        self.DP = self.DP(env)
+        self.MF = self.model_free(env)
         
-    class DP_prediction:
+    class DP:
         def __init__(self,env,discount_factor=1):
             self.env = env
             self.init_policy = np.ones((len(self.env.action_space),env.tot_states))/len(self.env.action_space)
@@ -49,87 +49,110 @@ class RL:
                 
             print(k, self.value.reshape([4,4]))
             
-    class model_free_prediction:
-        def __init__(self, env, lamb = 0.9, discount_factor = 0.9, alpha = 0.5):
+    class model_free:
+        def __init__(self, env, lamb=0.9, discount_factor=0.9, alpha=0.5, epsilon=0.5):
             self.env = env
             self.gamma = discount_factor
             self.lamb = lamb
-            self.init_value = np.zeros((self.env.tot_states,))
-            self.value = self.init_value.copy()
-            # visit matrix N(s)
-            self.N = np.zeros((self.env.tot_states,))
-            # increment total return S(s)
-            self.S = np.zeros((self.env.tot_states,))
-            # sample actions
-            self.sp = np.ones(shape=(len(self.env.action_space),))
             self.alpha = alpha
+            self.epsilon = epsilon
+            # init value matrix
+            self.init_value = np.zeros((self.env.tot_states,)) # state-value
+            self.value = self.init_value.copy() # state-value            
+            self.init_Avalue = np.zeros((len(self.env.action_space),self.env.tot_states)) # action-value
+            self.Avalue = self.init_Avalue.copy() # action-value
+            # sample actions
+            self.init_policy = np.ones((len(self.env.action_space),self.env.tot_states))/len(self.env.action_space)
+            self.policy = self.init_policy.copy()
         
-        def get_episode(self, env, sp):
+        def get_episode(self, env, policy):
             episode = []
             while (1):
                 cur_state = self.env.cur_state.copy()
-                is_terminate, reward = self.env.take_action(np.random.choice(np.arange(0, len(self.env.action_space)), p=sp/np.sum(sp)), show_animate=False)
+                state_policy = policy[:,int(self.env.position2state(cur_state))]
+                # take action
+                action = np.random.choice(np.arange(0, len(self.env.action_space)), p=state_policy)
+                is_terminate, reward = self.env.take_action(action, show_animate=False)
                 nxt_state = self.env.cur_state.copy()
-                episode.append(np.array([cur_state[0],cur_state[1],nxt_state[0],nxt_state[1],reward]))
+                # save to episode
+                episode.append(np.array([cur_state[0],cur_state[1],nxt_state[0],nxt_state[1],reward,action]))
                 if is_terminate:
                     self.env.cur_state = self.env.start_state.copy()
                     episode = np.asarray(episode)
                     break
             return episode
         
-        def iteration(self, n_episode = 10, model="MC"):
+        def epsilon_greedy(self, Avalue, epsilon=0.5):
+            new_policy = np.ones((len(self.env.action_space), self.env.tot_states))*epsilon/len(self.env.action_space)
+            argmax_a = np.argmax(Avalue, axis=0)
+            for c, value in enumerate(argmax_a):
+                new_policy[value,c] = epsilon/len(self.env.action_space) + 1 - epsilon
+                
+            return new_policy
+        
+        def iteration(self, n_episode = 10, model="MC", control = False):
             print("The model is", model)
             # visit matrix N(s)
-            self.N = np.zeros((self.env.tot_states,))
+            # N = np.zeros((self.env.tot_states,)) # state-value
+            N = np.zeros((len(self.env.action_space),self.env.tot_states)) # action-value
             # increment total return S(s)
-            self.S = np.zeros((self.env.tot_states,))
-            self.value = self.init_value.copy()
+            # S = np.zeros((self.env.tot_states,)) # state-value
+            S = np.zeros((len(self.env.action_space),self.env.tot_states)) # action-value
+            self.value = self.init_value.copy() # state-value
+            self.Avalue = self.init_Avalue.copy() # action-value
+            self.policy = self.init_policy.copy()
             # learning from episodes
             for rp in range(n_episode):
-                is_terminate = False
-                # get a episode sequence
-                episode = self.get_episode(self.env, self.sp)
+                # get an episode sequence
+                episode = self.get_episode(self.env, self.policy)
                 if (model == "MC"):
                     # initial counting and return matrices for a episode
-                    eN = np.zeros((self.env.tot_states,))
-                    eS = np.zeros((self.env.tot_states,))
+                    # eN = np.zeros((self.env.tot_states,)) # state-value
+                    # eS = np.zeros((self.env.tot_states,)) # state-value
+                    eN = np.zeros((len(self.env.action_space),self.env.tot_states)) # action-value
+                    eS = np.zeros((len(self.env.action_space),self.env.tot_states)) # action-value
                     # scan the eposid
                     for t in range(len(episode)):
                         # get information from the state s at time t
                         cur_state = int(self.env.position2state(np.asarray([episode[t,0],episode[t,1]])))
                         nxt_state = int(self.env.position2state(np.asarray([episode[t,2],episode[t,3]])))
+                        action = int(episode[t,5])
                         # first-visit method. for every_visit method, remove the if (eN[cur_state]==0)
-                        if (eN[cur_state]==0):
-                            eN[cur_state] = eN[cur_state] + 1
+                        if (eN[action, cur_state]==0):
+                            eN[action, cur_state] = eN[action, cur_state] + 1
                             # calculate with following returns
                             Gt = np.sum(episode[t:,4]*np.array([self.gamma**i for i in range(len(episode[t:,4]))]))
-                            eS[cur_state] = eS[cur_state] + Gt
+                            eS[action, cur_state] = eS[action, cur_state] + Gt
                     
-                    self.N = self.N + eN
-                    self.S = self.S + eS
+                    N = N + eN
+                    S = S + eS
                     # regular mean, S/N
-                    # self.value = np.divide(self.S, self.N, out=np.zeros_like(self.S), where=self.N!=0)
+                    # self.value = np.divide(S, self.N, out=np.zeros_like(S), where=N!=0)
                     # running mean, V(s) = V(s) + (Gt-V(s))/N(s)
-                    self.value = self.value + np.divide(eS-self.value, self.N, out=np.zeros_like(eS), where=eN!=0)
-                    
+                    self.Avalue = self.Avalue + np.divide(eS-self.Avalue, N, out=np.zeros_like(eS), where=eN!=0)
+                    if (control):
+                        # update policy
+                        self.policy = self.epsilon_greedy(self.Avalue)
+                     
                 elif (model == "TD_0"):
                     # the codes are similar with TD_lambda except E = simulas
                     # init Eligibility Traces
-                    E = np.zeros((self.env.tot_states,))
+                    E = np.zeros((len(self.env.action_space),self.env.tot_states))
                     # scan episode
                     for t in range(len(episode)):
                         cur_state = int(self.env.position2state(np.asarray([episode[t,0],episode[t,1]])))
                         nxt_state = int(self.env.position2state(np.asarray([episode[t,2],episode[t,3]])))
                         reward = episode[t,4]
-                        TD_target = reward + self.gamma*self.value[nxt_state]
-                        TD_error = TD_target - self.value[cur_state]
+                        action = int(episode[t,5])
+                        TD_target = reward + self.gamma*self.Avalue[action, nxt_state]
+                        TD_error = TD_target - self.Avalue[action, cur_state]
                         # set 1 for the visiting state
-                        simulas = np.zeros((self.env.tot_states,))
-                        simulas[cur_state] = 1
-                        # update Eligibility Traces 
+                        simulas = np.zeros((len(self.env.action_space),self.env.tot_states))
+                        simulas[action, cur_state] = 1
                         E = simulas
                         # update value
-                        self.value = self.value + self.alpha*TD_error*E
+                        self.Avalue = self.Avalue + self.alpha*TD_error*E
+                        
                 elif (model == "TD_n"):
                     # set length
                     n = 5
@@ -142,31 +165,37 @@ class RL:
                         nxt_state = int(self.env.position2state(np.asarray([sub_episode[len(sub_episode)-1,2],sub_episode[len(sub_episode)-1,3]])))
                         # get reward sequence
                         reward = sub_episode[:,4]
+                        action = int(episode[t,5])
                         # calculate the TD target, R_{t+1} + gamma*R_{t+2} + ... + gamma^{n-1}*R_{t+n} + gamma^{n}*V_{t+n} 
-                        TD_target = np.sum(reward*np.array([self.gamma**i for i in range(len(reward))])) + np.power(self.gamma,len(reward))*self.value[nxt_state]
+                        TD_target = np.sum(reward*np.array([self.gamma**i for i in range(len(reward))])) + np.power(self.gamma,len(reward))*self.Avalue[action, nxt_state]
                         
-                        TD_error = TD_target - self.value[cur_state]
-                        self.value[cur_state] = self.value[cur_state] + self.alpha*(TD_error)
-                elif (model == "TD_lambda"):
+                        TD_error = TD_target - self.Avalue[action, cur_state]
+                        self.Avalue[action, cur_state] = self.Avalue[action, cur_state] + self.alpha*(TD_error)
+                        
+                elif (model == "TD_lambda"): # Sarsa_lambda
                     # backward
                     # Eligibility Traces
-                    E = np.zeros((self.env.tot_states,))
+                    E = np.zeros((len(self.env.action_space),self.env.tot_states))
                     # scan episode
+                    step =  0
                     for t in range(len(episode)):
                         cur_state = int(self.env.position2state(np.asarray([episode[t,0],episode[t,1]])))
                         nxt_state = int(self.env.position2state(np.asarray([episode[t,2],episode[t,3]])))
                         reward = episode[t,4]
-                        TD_target = reward + self.gamma*self.value[nxt_state]
-                        TD_error = TD_target - self.value[cur_state]
+                        action = int(episode[t,5])
+                        TD_target = reward + self.gamma*self.Avalue[action, nxt_state]
+                        TD_error = TD_target - self.Avalue[action, cur_state]
                         # set 1 for the visiting state
-                        simulas = np.zeros((self.env.tot_states,))
-                        simulas[cur_state] = 1
-                        # update Eligibility Traces 
-                        E = self.gamma*self.lamb*E + simulas
+                        simulas = np.zeros((len(self.env.action_space),self.env.tot_states))
+                        simulas[action, cur_state] = 1
+                        E = E + simulas
                         # update V(s) for every state
-                        self.value = self.value + self.alpha*TD_error*E
+                        self.Avalue = self.Avalue + self.alpha*TD_error*E
+                        # update Eligibility Traces 
+                        E = self.gamma*self.lamb*E
+                    if (control):
+                        # update policy
+                        self.policy = self.epsilon_greedy(self.Avalue)
+                    
                 else:
-                    print("ERROR MF model, please set to MC or TD")
-            
-            print("Value\n",self.value.reshape(4,4))
-            print("--------------------------\n")
+                    print("ERROR MF model")
