@@ -2,8 +2,8 @@
 Contributors: silver and helen
 
 ## A Small Grid World 
-A small grid world, you can define the parameter in the [maze_env.py](https://github.com/chihfanhsu/RL_practice/blob/master/maze_env.py). 
-Some codes in [maze_env.py](https://github.com/chihfanhsu/RL_practice/blob/master/maze_env.py) are referenced from [莫煩PYTHON](https://morvanzhou.github.io/tutorials/machine-learning/reinforcement-learning/).
+A small grid world, you can define the parameter in the [maze_env.py](https://github.com/chihfanhsu/RL_practice/blob/master/maze_env.py) [1].
+
 For example, <br />
 ![alt text](https://github.com/chihfanhsu/RL_practice/blob/master/README_fig/world_example.png)<br />
 ```python
@@ -28,3 +28,5 @@ You can find the functions in the [utility.py](https://github.com/chihfanhsu/RL_
 * Model-free Control (set control=True in the iteration function)
   * Monte-Carlo (model == "MC")
   * Sarsa(<img src="http://chart.googleapis.com/chart?cht=tx&chl=\lambda" style="border:none;">), on/off-policy (model == "TD_lambda")
+
+[1] Some codes in [maze_env.py](https://github.com/chihfanhsu/RL_practice/blob/master/maze_env.py) are referenced from [莫煩PYTHON](https://morvanzhou.github.io/tutorials/machine-learning/reinforcement-learning/).
