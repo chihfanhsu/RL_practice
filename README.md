@@ -17,13 +17,13 @@ self.hell_state =  np.array([[4, 4]]) # you die!
 ## Implemented Algorithms
 You can find the functions in the [utility.py](https://github.com/chihfanhsu/RL_practice/blob/master/utility.py).
 * Planning
-  * Dynamic programing
-* Model-free Prediction
-  * Monte-Carlo
+  * Dynamic programing (class DP)
+* Model-free Prediction (class model_free)
+  * Monte-Carlo (model == "MC")
   * Temporal Difference (Action-value)
-    * TD(0)
-    * TD(n)
-    * TD(<img src="http://chart.googleapis.com/chart?cht=tx&chl=\lambda" style="border:none;">)
-* Model-free Control
-  * Monte-Carlo
-  * Sarsa(<img src="http://chart.googleapis.com/chart?cht=tx&chl=\lambda" style="border:none;">), on/off-policy
+    * TD(0) (model == "TD_0")
+    * TD(n) (model == "TD_n")
+    * TD(<img src="http://chart.googleapis.com/chart?cht=tx&chl=\lambda" style="border:none;">) (model == "TD_lambda")
+* Model-free Control (set control=True in the iteration function)
+  * Monte-Carlo (model == "MC")
+  * Sarsa(<img src="http://chart.googleapis.com/chart?cht=tx&chl=\lambda" style="border:none;">), on/off-policy (model == "TD_lambda")
