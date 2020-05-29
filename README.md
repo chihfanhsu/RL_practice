@@ -2,7 +2,8 @@
 Contributors: silver and helen
 
 ## A Small Grid World 
-A small grid world, you can define the parameter in the [maze_env.py](https://github.com/chihfanhsu/RL_practice/blob/master/maze_env.py).
+A small grid world, you can define the parameter in the [maze_env.py](https://github.com/chihfanhsu/RL_practice/blob/master/maze_env.py). 
+Some codes in [maze_env.py](https://github.com/chihfanhsu/RL_practice/blob/master/maze_env.py). are referenced from [莫煩PYTHON](https://morvanzhou.github.io/tutorials/machine-learning/reinforcement-learning/).
 For example, <br />
 ![alt text](https://github.com/chihfanhsu/RL_practice/blob/master/README_fig/world_example.png)<br />
 ```python
