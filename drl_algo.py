@@ -108,7 +108,7 @@ class DRL:
                 # print('select action')
                 # forward feed the observation and get q value for every actions
                 actions_value = self.sess.run(self.q_eval,
-                                              feed_dict={self.s: (observation[np.newaxis, :]-self.env.oval_state)/4})
+                                              feed_dict={self.s: (observation[np.newaxis, :])})
                 action = np.argmax(actions_value)
             else:
                 action = np.random.randint(0, self.n_actions)
@@ -130,8 +130,8 @@ class DRL:
                 
             batch_memory_trans = self.memory_trans[sample_index, :]
             _, cost = self.sess.run([self._train_op, self.loss],
-                                       feed_dict={self.s: (batch_memory_trans[:, :self.n_features]-self.env.oval_state)/4,
-                                                  self.s_: (batch_memory_trans[:, -self.n_features:]-self.env.oval_state)/4,  # fixed params
+                                       feed_dict={self.s: (batch_memory_trans[:, :self.n_features]),
+                                                  self.s_: (batch_memory_trans[:, -self.n_features:]),  # fixed params
                                                   self.r: batch_memory_trans[:, self.n_features + 1],
                                                   self.a: batch_memory_trans[:, self.n_features]})
             self.cost_his.append(cost)
@@ -179,7 +179,7 @@ class DRL:
             for s in range(self.env.tot_states):
                 coor = self.env.position2state(s, inv = True)
                 actions_value_s = self.sess.run(self.q_eval,
-                                                feed_dict={self.s: (coor[np.newaxis, :]-self.env.oval_state)/4})
+                                                feed_dict={self.s: (coor[np.newaxis, :])})
                 self.Avalue.append(actions_value_s)
             
             # end of game

@@ -19,11 +19,11 @@ class Maze(tk.Tk, object):
         self.tot_states = self.MAZE_Limit[0]*self.MAZE_Limit[1]      
         self.origin = np.array([0, 0]) # world's original location
         self.origin_center = self.origin.copy() + int(.5*self.UNIT)
-        self.start_state =  np.array([0, 0]) # initial location of the agent
+        self.start_state =  np.array([1, 1]) # initial location of the agent
         self.cur_state = self.start_state.copy() # agent loc
-        self.oval_state = np.array([[2, 2]]) # reward!
-        self.block_state = np.array([[1, 2]]) # you shall not pass!
-        self.hell_state =  np.array([[2, 1]]) # you die!
+        self.oval_state = np.array([[0, 0],[3, 3]]) # reward!
+        self.block_state = np.array([[4, 4]]) # you shall not pass!
+        self.hell_state =  np.array([[4, 4]]) # you die!
         
         self.reward = np.ones((len(self.action_space),self.tot_states))*-1
         # set reward to oval state = 0
@@ -42,7 +42,7 @@ class Maze(tk.Tk, object):
         for a in range(len(self.action_space)):
             for t in range(len(self.block_state)):
                 if (self.position2state(self.hell_state[t])<self.tot_states):
-                    self.reward[a,self.position2state(self.hell_state[t])] = -10
+                    self.reward[a,self.position2state(self.hell_state[t])] = 0
         self._build_maze()
     
     def fresh_figure(self):
