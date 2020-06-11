@@ -19,25 +19,30 @@ class Maze(tk.Tk, object):
         self.tot_states = self.MAZE_Limit[0]*self.MAZE_Limit[1]      
         self.origin = np.array([0, 0]) # world's original location
         self.origin_center = self.origin.copy() + int(.5*self.UNIT)
-        self.start_state =  np.array([1, 2]) # initial location of the agent
+        self.start_state =  np.array([0, 0]) # initial location of the agent
         self.cur_state = self.start_state.copy() # agent loc
-        self.oval_state = np.array([[0, 0],[3, 3]]) # reward!
-        self.block_state = np.array([[2, 1]]) # you shall not pass!
-        self.hell_state =  np.array([[4, 4]]) # you die!
+        self.oval_state = np.array([[2, 2]]) # reward!
+        self.block_state = np.array([[1, 2]]) # you shall not pass!
+        self.hell_state =  np.array([[2, 1]]) # you die!
         
         self.reward = np.ones((len(self.action_space),self.tot_states))*-1
         # set reward to oval state = 0
         for a in range(len(self.action_space)):
             for t in range(len(self.oval_state)):
                 if (self.position2state(self.oval_state[t])<self.tot_states):
-                    self.reward[a,self.position2state(self.oval_state[t])] = 0
+                    self.reward[a,self.position2state(self.oval_state[t])] = 10
         
         # set reward to block state = 0
         for a in range(len(self.action_space)):
             for t in range(len(self.block_state)):
                 if (self.position2state(self.block_state[t])<self.tot_states):
                     self.reward[a,self.position2state(self.block_state[t])] = 0
-
+                    
+        # set reward to block state = 0
+        for a in range(len(self.action_space)):
+            for t in range(len(self.block_state)):
+                if (self.position2state(self.hell_state[t])<self.tot_states):
+                    self.reward[a,self.position2state(self.hell_state[t])] = -10
         self._build_maze()
     
     def fresh_figure(self):
@@ -146,10 +151,12 @@ class Maze(tk.Tk, object):
         # termination check
         if np.any(np.all(self.cur_state == self.oval_state, axis=1)):
             next_state = self.cur_state.copy()
+            reward = reward + self.reward[action,self.position2state(self.cur_state)].copy()
             return True, reward
         
         if np.any(np.all(self.cur_state == self.hell_state, axis=1)):
             next_state = self.cur_state.copy()
+            reward = reward + self.reward[action,self.position2state(self.cur_state)].copy()
             return True, reward
 
         return False, reward
@@ -165,7 +172,7 @@ class Maze(tk.Tk, object):
         else:
             in_pos = np.array(pos)
             if in_pos.shape == ():
-                return np.array([np.int(np.floor(in_pos/self.MAZE_Limit[0])), np.int(in_pos%self.MAZE_Limit[0])])
+                return np.array([np.int(np.floor(in_pos%self.MAZE_Limit[0])), np.int(in_pos/self.MAZE_Limit[0])])
             else:
                 print("Error state number")
                 return False
@@ -191,5 +198,11 @@ class Maze(tk.Tk, object):
             for t in range(len(self.block_state)):
                 if (self.position2state(self.block_state[t])<self.tot_states):
                     p[a,self.position2state(self.block_state[t])] = 0
+        
+        # set hell state
+        for a in range(len(self.action_space)):
+            for t in range(len(self.hell_state)):
+                if (self.position2state(self.hell_state[t])<self.tot_states):
+                    p[a,self.position2state(self.hell_state[t])] = 0
         
         return p
