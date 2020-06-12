@@ -29,4 +29,8 @@ You can find the functions in the [utility.py](https://github.com/chihfanhsu/RL_
   * Monte-Carlo (model == "MC")
   * Sarsa(<img src="http://chart.googleapis.com/chart?cht=tx&chl=\lambda" style="border:none;">), on/off-policy (model == "TD_lambda")
 
+* Function Approximation
+  * Deep Q Network (DQN)
+  * Double DQN
+
 [1] Some codes in [maze_env.py](https://github.com/chihfanhsu/RL_practice/blob/master/maze_env.py) are referenced from [莫煩PYTHON](https://morvanzhou.github.io/tutorials/machine-learning/reinforcement-learning/).
