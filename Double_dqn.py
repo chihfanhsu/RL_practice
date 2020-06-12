@@ -12,9 +12,9 @@ tf.compat.v1.disable_eager_execution()
 
 class DRL:
     def __init__(self,env):
-        self.QDN = self.DeepQNetwork(env)
+        self.Double_QDN = self.Double_DeepQNetwork(env)
     # Deep Q Network off-policy
-    class DeepQNetwork:
+    class Double_DeepQNetwork:
         def __init__(
                 self,
                 env,
@@ -71,20 +71,30 @@ class DRL:
             self.r = tf.compat.v1.placeholder(tf.float32, [None, ], name='r')  # input Reward
             self.a = tf.compat.v1.placeholder(tf.int32, [None, ], name='a')  # input Action
             
-            with tf.compat.v1.variable_scope('eval_net'):
-                self.q_eval = mdl.model(self.s,self.n_actions)
+            batch_size = tf.shape(self.s)[0]  # double DQN
+            merge_input = tf.concat([self.s, self.s_], axis=0, name='concat') # double DQN
+            
+            with tf.compat.v1.variable_scope('eval_net'): # with parameter theta
+                merge_out = mdl.model(merge_input,self.n_actions) # double DQN
+                # calculate Q(s,a,theta) and Q(s',a',theta) at the same time
+                self.q_eval, self.q_eval4next = tf.split(merge_out, [batch_size,batch_size], axis = 0) # double DQN
                 
-            with tf.compat.v1.variable_scope('target_net'):
+            with tf.compat.v1.variable_scope('target_net'): # with parameter theta'
                 self.q_next = mdl.model(self.s_,self.n_actions)
                 
             with tf.compat.v1.variable_scope('q_target'):
-                # calculate r + gamma*max_{a'} Q(s',a',theta') at the same time
-                q_target = self.r + self.gamma * tf.reduce_max(self.q_next, axis=1, name='Qmax_s_')    # shape=(None, )
+                # calculate argmax_{a'} Q(s',a',theta) at the same time
+                Qmax_s_wrt_theta = tf.argmax(self.q_eval4next, axis=1, output_type=tf.dtypes.int32, name='Qmax_s_wrt_theta') # double DQN
+                # generating index [[0,a'_0],[1,a'_1],...]
+                a_indices_wrt_theta = tf.stack([tf.range(batch_size, dtype=tf.int32), Qmax_s_wrt_theta], axis=1) # double DQN
+                # calculate r + gamma*Q(s', argmax_{a'} Q(s',a',theta), theta')
+                q_target = self.r + self.gamma * tf.gather_nd(params=self.q_next, indices=a_indices_wrt_theta) # double DQN
+                #q_target = self.r + self.gamma * tf.reduce_max(self.q_next, axis=1, name='Qmax_s_') # Ori DQN
                 # forbid graident pass back to the network
                 self.q_target = tf.stop_gradient(q_target)
                 
             with tf.compat.v1.variable_scope('q_eval'):
-                a_indices = tf.stack([tf.range(tf.shape(self.a)[0], dtype=tf.int32), self.a], axis=1)
+                a_indices = tf.stack([tf.range(batch_size, dtype=tf.int32), self.a], axis=1)
                 # only output with the certain action
                 self.q_eval_wrt_a = tf.gather_nd(params=self.q_eval, indices=a_indices)    # shape=(None, )
                 
@@ -109,7 +119,8 @@ class DRL:
                 # print('select action')
                 # forward feed the observation and get q value for every actions
                 actions_value = self.sess.run(self.q_eval,
-                                              feed_dict={self.s: (observation[np.newaxis, :])})
+                                              feed_dict={self.s: (observation[np.newaxis, :]),
+                                                         self.s_: (observation[np.newaxis, :])})
                 action = np.argmax(actions_value)
             else:
                 action = np.random.randint(0, self.n_actions)
@@ -136,7 +147,6 @@ class DRL:
                                                   self.r: batch_memory_trans[:, self.n_features + 1],
                                                   self.a: batch_memory_trans[:, self.n_features]})
             self.cost_his.append(cost)
-            
             self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
             self.learn_step_counter += 1
             return is_update
@@ -164,7 +174,7 @@ class DRL:
                     done, reward = self.env.take_action(action, show_animate = True)
                     observation_ = self.env.cur_state.copy()
                     self.store_transition(observation, action, reward, observation_)
-                    if (step > 200)  and (step % 5 == 0):
+                    if (step > 0)  and (step % 5 == 0):
                         is_update = self.learn()
                         
                     if (episode>(n_episode/2)):
@@ -180,7 +190,8 @@ class DRL:
             for s in range(self.env.tot_states):
                 coor = self.env.position2state(s, inv = True)
                 actions_value_s = self.sess.run(self.q_eval,
-                                                feed_dict={self.s: (coor[np.newaxis, :])})
+                                                feed_dict={self.s: (coor[np.newaxis, :]),
+                                                           self.s_: (coor[np.newaxis, :])})
                 self.Avalue.append(actions_value_s)
             
             # end of game
