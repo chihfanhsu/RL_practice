@@ -41,10 +41,10 @@ class RL:
             # start iteration
             for k in range(update):
                 # policy iteration
-                # v_next = self.BEE(self.reward, policy, gamma, p, self.value)
+                v_next = self.BEE(self.env.reward, policy, self.gamma, p, self.value)
                 # policy = self.update_oplicy(p, v_next, mode ="argmax")
                 # value iteration
-                v_next = self.BOE(self.env.reward, self.gamma, p, self.value)
+                # v_next = self.BOE(self.env.reward, self.gamma, p, self.value)
                 self.value = v_next.copy()
                 
             print(k, self.value.reshape([4,4]))

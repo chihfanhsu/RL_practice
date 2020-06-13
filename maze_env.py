@@ -30,7 +30,7 @@ class Maze(tk.Tk, object):
         for a in range(len(self.action_space)):
             for t in range(len(self.oval_state)):
                 if (self.position2state(self.oval_state[t])<self.tot_states):
-                    self.reward[a,self.position2state(self.oval_state[t])] = 10
+                    self.reward[a,self.position2state(self.oval_state[t])] = 0
         
         # set reward to block state = 0
         for a in range(len(self.action_space)):
@@ -40,7 +40,7 @@ class Maze(tk.Tk, object):
                     
         # set reward to block state = 0
         for a in range(len(self.action_space)):
-            for t in range(len(self.block_state)):
+            for t in range(len(self.hell_state)):
                 if (self.position2state(self.hell_state[t])<self.tot_states):
                     self.reward[a,self.position2state(self.hell_state[t])] = 0
         self._build_maze()
