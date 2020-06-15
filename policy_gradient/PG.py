@@ -67,7 +67,7 @@ class DRL:
                 
             with tf.compat.v1.variable_scope('train'):
                 # calculating gamma*grad_log pi_theda(s_t,a_t)*v_t and directly update theda
-                self._train_op = tf.compat.v1.train.RMSPropOptimizer(self.lr).minimize(self.loss)
+                self._train_op = tf.compat.v1.train.AdamOptimizer(self.lr).minimize(self.loss)
                 
         def store_transition(self, s, a, r, s_):
             self.states.append(s)
@@ -109,6 +109,7 @@ class DRL:
             
         def iteration(self, n_episode=10):
             step = 0
+            self.hist = []
             for episode in tqdm(range(n_episode)):
                 # initial observation
                 self.env.reset()
@@ -132,6 +133,7 @@ class DRL:
                         self.actions = []
                         self.rewards = []
                         break
+                self.hist.append([episode, step])
             
             # end of game
             self.env.destroy()
