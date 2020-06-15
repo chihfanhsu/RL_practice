@@ -1,13 +1,11 @@
 import os
 from maze_env import Maze
-from utility import Prediction
 import time
 import numpy as np
 
 maz = Maze()
 # only for interaction:
-# env.bind('<KeyPress>', onKeyPress)
-# env.mainloop()
+maz.render()
 # whether there's block or not
 block_setting = True
 # choose which algorithm type
