@@ -93,10 +93,10 @@ class RL:
         def iteration(self, n_episode = 10, model="MC", control = False, on_policy = True):
             print("The model is", model)
             # visit matrix N(s)
-            # N = np.zeros((self.env.tot_states,)) # state-value
+            sN = np.zeros((self.env.tot_states,)) # state-value
             N = np.zeros((len(self.env.action_space),self.env.tot_states)) # action-value
             # increment total return S(s)
-            # S = np.zeros((self.env.tot_states,)) # state-value
+            sS = np.zeros((self.env.tot_states,)) # state-value
             S = np.zeros((len(self.env.action_space),self.env.tot_states)) # action-value
             self.value = self.init_value.copy() # state-value
             self.Avalue = self.init_Avalue.copy() # action-value
@@ -107,10 +107,10 @@ class RL:
                 episode = self.get_episode(self.env, self.policy)
                 if (model == "MC"):
                     # initial counting and return matrices for a episode
-                    # eN = np.zeros((self.env.tot_states,)) # state-value
-                    # eS = np.zeros((self.env.tot_states,)) # state-value
                     eN = np.zeros((len(self.env.action_space),self.env.tot_states)) # action-value
                     eS = np.zeros((len(self.env.action_space),self.env.tot_states)) # action-value
+                    esN = np.zeros((self.env.tot_states,)) # state-value
+                    esS = np.zeros((self.env.tot_states,)) # state-value
                     # scan the eposid
                     for t in range(len(episode)):
                         # get information from the state s at time t
@@ -118,18 +118,28 @@ class RL:
                         nxt_state = int(self.env.position2state(np.asarray([episode[t,2],episode[t,3]])))
                         action = int(episode[t,5])
                         # first-visit method. for every_visit method, remove the if (eN[cur_state]==0)
+                        # for action-value
                         if (eN[action, cur_state]==0):
                             eN[action, cur_state] = eN[action, cur_state] + 1
                             # calculate with following returns
                             Gt = np.sum(episode[t:,4]*np.array([self.gamma**i for i in range(len(episode[t:,4]))]))
                             eS[action, cur_state] = eS[action, cur_state] + Gt
+                        # for state-value
+                        if (esN[cur_state]==0):
+                            esN[cur_state] = esN[cur_state] + 1
+                            # calculate with following returns
+                            Gt = np.sum(episode[t:,4]*np.array([self.gamma**i for i in range(len(episode[t:,4]))]))
+                            esS[cur_state] = esS[cur_state] + Gt
                     
                     N = N + eN
                     S = S + eS
+                    sN = sN + esN
+                    sS = sS + esS
                     # regular mean, S/N
                     # self.value = np.divide(S, self.N, out=np.zeros_like(S), where=N!=0)
                     # running mean, V(s) = V(s) + (Gt-V(s))/N(s)
                     self.Avalue = self.Avalue + np.divide(eS-self.Avalue, N, out=np.zeros_like(eS), where=eN!=0)
+                    self.value = self.value + np.divide(esS-self.value, sN, out=np.zeros_like(esS), where=esN!=0)
                     if (control):
                         # update policy
                         self.policy = self.epsilon_greedy(self.Avalue)
