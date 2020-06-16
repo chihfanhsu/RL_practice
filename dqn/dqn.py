@@ -151,6 +151,7 @@ class DRL:
             
         def iteration(self, n_episode=10):
             step = 0
+            self.hist = []
             for episode in tqdm(range(n_episode)):
                 # initial observation
                 self.env.reset()
@@ -175,6 +176,9 @@ class DRL:
                     step += 1
                     if done:
                         break
+                
+                self.hist.append([episode, step])
+            
             # output value
             self.Avalue = []
             for s in range(self.env.tot_states):
