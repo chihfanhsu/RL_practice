@@ -23,7 +23,8 @@ gamma = 0.9
 alpha = 0.5
 # only TD(lambda) backward view, no TD_N, TD(lambda) forward
 lambda_value = 0.5
-# [TO-DO] online / offline (?)
+# [TO-DO] online / exact online / offline (?)
+update_type = "online"
 
 n_episode = 2000
 nth_reward = -1
